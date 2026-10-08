@@ -1,5 +1,5 @@
-// TU endpoint real de API Gateway.
-const API_URL = 'https://flt9aaekyb.execute-api.us-east-1.amazonaws.com/dev/contact';
+﻿// TU endpoint real de API Gateway.
+const API_URL = 'https://flt9aaekyb.execute-api.us-east-1.amazonaws.com/dev/contact/id';
  
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector('.ebook-download-form');
@@ -24,10 +24,16 @@ document.addEventListener('DOMContentLoaded', () => {
       });
  
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? 'Error al enviar');
- 
-      alert(result.message);
-      console.log(result);
+      // API Gateway puede envolver la respuesta Lambda en { statusCode, body }.
+      const data = typeof result.body === 'string'
+        ? JSON.parse(result.body)
+        : (result.body ?? result);
+
+      if (!response.ok || (result.statusCode && result.statusCode >= 400)) {
+        throw new Error(data.error ?? 'Error al enviar');
+      }
+
+      alert(data.message ?? 'Solicitud recibida correctamente');
       form.reset();
     } catch (error) {
       console.error('Error API:', error);
